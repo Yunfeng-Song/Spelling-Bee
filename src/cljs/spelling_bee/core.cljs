@@ -5,8 +5,7 @@
    [re-frame.core :as re-frame :refer [dispatch dispatch-sync]]
    [spelling-bee.events :as events]
    [spelling-bee.views :as views]
-   [spelling-bee.config :as config]
-   [clojure.string :as str :refer [upper-case]]))
+   [spelling-bee.config :as config]))
 
 
 (defn dev-setup []
@@ -23,5 +22,8 @@
   (dispatch-sync [:initialize-db])
   (dev-setup)
   (mount-root)
-  (.addEventListener js/document "keydown" #(when (and (<= 65 (.-keyCode %)) (>= 90 (.-keyCode %)))
-                                              (dispatch [:add-char (upper-case (.-key %))]))))
+  #_(.addEventListener js/document "keydown" #(cond
+                                                (and (<= 65 (.-keyCode %)) (>= 90 (.-keyCode %))) (dispatch [:add-char (upper-case (.-key %))])
+                                                (= 32 (.-keyCode %)) (dispatch [:shuffle])
+                                                (= 8 (.-keyCode %)) (dispatch [:delete-char])
+                                                (= 13 (.-keyCode %)) (dispatch [:handle-save]))))

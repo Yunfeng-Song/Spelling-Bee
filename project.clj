@@ -6,10 +6,11 @@
                                org.clojure/google-closure-library-third-party]]
                  [thheller/shadow-cljs "2.9.3"]
                  [reagent "0.10.0"]
-                 [re-frame "0.12.0"]]
+                 [re-frame "0.12.0"]
+                 [re-pressed "0.3.1"]]
 
   :plugins [[lein-shadow "0.2.0"]
-            
+
             [lein-shell "0.5.0"]]
 
   :min-lein-version "2.9.0"
@@ -24,7 +25,7 @@
                              :linux   "xdg-open"}}}
 
   :shadow-cljs {:nrepl {:port 8777}
-                
+
                 :builds {:app {:target :browser
                                :output-dir "resources/public/js/compiled"
                                :asset-path "/js/compiled"
@@ -32,8 +33,7 @@
                                                :preloads [devtools.preload]}}
 
                                :devtools {:http-root "resources/public"
-                                          :http-port 8280
-                                          }}}}
+                                          :http-port 8280}}}}
 
   :aliases {"dev"          ["with-profile" "dev" "do"
                             ["shadow" "watch" "app"]]
@@ -51,8 +51,6 @@
    {:dependencies [[binaryage/devtools "1.0.0"]]
     :source-paths ["dev"]}
 
-   :prod {}
-   
-}
+   :prod {}}
 
   :prep-tasks [])

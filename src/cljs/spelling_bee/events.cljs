@@ -2,7 +2,7 @@
   (:require
    [re-frame.core :as re-frame :refer [reg-event-db]]
    [spelling-bee.db :as db]
-   [clojure.string :refer [upper-case]]))
+   [clojure.string :refer [upper-case split]]))
 
 (reg-event-db
  :initialize-db
@@ -16,17 +16,32 @@
 
 (reg-event-db
  :handle-save
- (fn [db [_ value]]
-   (cond
-     (some #{value} (:word-list db))                   (do
-                                                         (js/alert "Already found") ;;******************************
-                                                         (assoc db :value ""))
-     (some #{value} (map upper-case (get-in db [:game-data :answers]))) (-> db
-                                                                            (update :word-list conj value)
-                                                                            (assoc :value ""))
-     :else                                             (do
-                                                         (js/alert "Bad letters") ;;******************************
-                                                         (assoc db :value "")))))
+ (fn [db _]
+   (let [value (:value db)]
+     (cond
+       (< (count value) 4) (do
+                             (js/alert "Too short")
+                             (assoc db :value ""))
+
+
+       (not (every? #(some #{%} (conj (get-in db [:game-data :chars :rest]) (first (get-in db [:game-data :chars :main])))) (split value ""))) (do
+                                                                                                                                                 (js/alert "Bad letters")
+                                                                                                                                                 (assoc db :value ""))
+       (not (some #{(get-in db [:game-data :chars :main])} (split value ""))) (do
+                                                                                (js/alert "Missing center letter")
+                                                                                (assoc db :value ""))
+       (not (some #{value} (map upper-case (get-in db [:game-data :answers]))))  (do
+                                                                                   (js/alert "Not in word list")
+                                                                                   (assoc db :value ""))
+       (some #{value} (:word-list db))                   (do
+                                                           (js/alert "Already found")
+                                                           (assoc db :value ""))
+       :else  (let [point (+ (- (count value) 3) (if (every? #(some #{%} (split value "")) (get-in db [:game-data :chars :rest])) 7 0))]
+                (js/alert (str "Good! +" point))
+                (-> db
+                    (update :word-list conj value)
+                    (update :current-score + point)
+                    (assoc :value "")))))))
 
 (reg-event-db
  :add-char

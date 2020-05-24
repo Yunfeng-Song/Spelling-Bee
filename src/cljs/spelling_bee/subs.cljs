@@ -40,3 +40,13 @@
  :answer-list
  (fn [db _]
    (get-in db [:game-data :answers])))
+
+(reg-sub
+ :rankings
+ (fn [db _]
+   (get-in db [:game-data :rankings])))
+
+(reg-sub
+ :current-score
+ (fn [db _]
+   (get-in db [:current-score])))
