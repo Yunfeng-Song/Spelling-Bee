@@ -50,3 +50,13 @@
  :current-score
  (fn [db _]
    (get-in db [:current-score])))
+
+(reg-sub
+ :popup
+ (fn [db _]
+   (get db :popup)))
+
+(reg-sub
+ :message
+ (fn [db _]
+   (get db :message)))

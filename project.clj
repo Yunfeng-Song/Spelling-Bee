@@ -7,7 +7,7 @@
                  [thheller/shadow-cljs "2.9.3"]
                  [reagent "0.10.0"]
                  [re-frame "0.12.0"]
-                 [re-pressed "0.3.1"]]
+                 [cljsjs/react-flip-move "3.0.1-1"]]
 
   :plugins [[lein-shadow "0.2.0"]
 

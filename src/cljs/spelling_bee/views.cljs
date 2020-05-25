@@ -1,8 +1,19 @@
 (ns spelling-bee.views
   (:require
+   [reagent.core :as reagent]
    [re-frame.core :as re-frame :refer [subscribe dispatch]]
    [spelling-bee.subs :as subs]
-   [clojure.string :as str :refer [split upper-case]]))
+   [clojure.string :as str :refer [split upper-case]]
+   ["react-flip-move" :as FlipMove]))
+
+
+
+(defn popup []
+  (let [success @(subscribe [:popup]) message @(subscribe [:message])]
+    [:> FlipMove {:enterAnimation "fade" :leaveAnimation "fade" :duration "1000"}
+     (when success
+       (dispatch [:popup-finished])
+       [:div message])]))
 
 
 (defn input []
@@ -64,7 +75,8 @@
    [:div {:style {:float "left"}}
     [input]
     [char-buttons]
-    [option-buttons]]
+    [option-buttons]
+    [popup]]
    [:div {:style {:float "right" :width "50%"}}
     [slider]
     [word-list]]])

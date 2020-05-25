@@ -19,26 +19,33 @@
  (fn [db _]
    (let [value (:value db)]
      (cond
-       (< (count value) 4) (do
-                             (js/alert "Too short")
-                             (assoc db :value ""))
+       (< (count value) 4) (-> db
+                               (assoc :popup true)
+                               (assoc :message "Too short")
+                               (assoc  :value ""))
 
 
-       (not (every? #(some #{%} (conj (get-in db [:game-data :chars :rest]) (first (get-in db [:game-data :chars :main])))) (split value ""))) (do
-                                                                                                                                                 (js/alert "Bad letters")
-                                                                                                                                                 (assoc db :value ""))
-       (not (some #{(get-in db [:game-data :chars :main])} (split value ""))) (do
-                                                                                (js/alert "Missing center letter")
-                                                                                (assoc db :value ""))
-       (not (some #{value} (map upper-case (get-in db [:game-data :answers]))))  (do
-                                                                                   (js/alert "Not in word list")
-                                                                                   (assoc db :value ""))
-       (some #{value} (:word-list db))                   (do
-                                                           (js/alert "Already found")
-                                                           (assoc db :value ""))
+       (not (every? #(some #{%} (conj (get-in db [:game-data :chars :rest]) (first (get-in db [:game-data :chars :main])))) (split value ""))) (-> db
+                                                                                                                                                   (assoc :popup true)
+                                                                                                                                                   (assoc :message  "Bad letters")
+                                                                                                                                                   (assoc :value ""))
+       (not (some #{(get-in db [:game-data :chars :main])} (split value ""))) (-> db
+                                                                                  (assoc :popup true)
+                                                                                  (assoc :message "Missing center letter")
+                                                                                  (assoc :value ""))
+       (not (some #{value} (map upper-case (get-in db [:game-data :answers]))))  (-> db
+                                                                                     (assoc :popup true)
+                                                                                     (assoc :message "Not in word list")
+                                                                                     (assoc  :value ""))
+       (some #{value} (:word-list db))                   (-> db
+                                                             (assoc :popup true)
+                                                             (assoc :message "Already found")
+                                                             (assoc :value ""))
        :else  (let [point (+ (- (count value) 3) (if (every? #(some #{%} (split value "")) (get-in db [:game-data :chars :rest])) 7 0))]
-                (js/alert (str "Good! +" point))
+
                 (-> db
+                    (assoc :popup true)
+                    (assoc :message (str "Good! +" point))
                     (update :word-list conj value)
                     (update :current-score + point)
                     (assoc :value "")))))))
@@ -57,4 +64,9 @@
  :shuffle
  (fn [db _]
    (update-in db [:game-data :chars :rest] shuffle)))
+
+(reg-event-db
+ :popup-finished
+ (fn [db _]
+   (assoc db :popup false)))
 
