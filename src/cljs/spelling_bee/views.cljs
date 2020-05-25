@@ -36,8 +36,9 @@
     [:div
      [:button {:style {:background-color "yellow"}
                :on-click #(dispatch [:add-char main-char])} main-char]
-     (for [char rest-chars]
-       ^{:key char} [:button {:on-click #(dispatch [:add-char char])} char])]))
+     [:> FlipMove {}
+      (for [char rest-chars]
+        ^{:key char} [:button {:on-click #(dispatch [:add-char char])} char])]]))
 
 
 (defn option-buttons []
