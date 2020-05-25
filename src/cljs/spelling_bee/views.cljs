@@ -7,7 +7,6 @@
    ["react-flip-move" :as FlipMove]))
 
 
-
 (defn popup []
   (let [success @(subscribe [:popup]) message @(subscribe [:message])]
     [:> FlipMove {:enterAnimation "fade" :leaveAnimation "fade" :duration "1000"}
@@ -34,8 +33,7 @@
 (defn char-buttons []
   (let [main-char @(subscribe [:main-char]) rest-chars @(subscribe [:rest-chars])]
     [:div
-     [:button {:style {:background-color "yellow"}
-               :on-click #(dispatch [:add-char main-char])} main-char]
+     [:button#main-button {:on-click #(dispatch [:add-char main-char])} main-char]
      [:> FlipMove {}
       (for [char rest-chars]
         ^{:key char} [:button {:on-click #(dispatch [:add-char char])} char])]]))
@@ -53,14 +51,14 @@
 
 (defn slider []
   (let [rankings @(subscribe [:rankings])]
-    [:div {:style {:cursor "pointer"} :on-click #(js/alert (str "Rankings: \n\n" (reduce (fn [acc item] (str acc " " (last item) "(" (first item) ")" "\n")) "" rankings)))}
+    [:div#slider-container {:on-click #(js/alert (str "Rankings: \n\n" (reduce (fn [acc item] (str acc " " (last item) "(" (first item) ")" "\n")) "" rankings)))}
      (let [current-score @(subscribe [:current-score]) rank (rankings (last (filter #(>= current-score %) (keys rankings))))]
        [:<> [:h4 rank]
         [:div#sb-progress-line
          [:div {:class "demo"}
           (for [stage rankings]
             ^{:key (last stage)} [:span {:class (if (<= (first stage) current-score) "sb-progress-dot completed" "sb-progress-dot")}])]
-         [:div#sb-progress-marker {:style {:float "left" :position "absolute" :margin-left (str (* 10.4 (- (count (filter #(>= current-score %) (keys rankings))) 1)) "%")}} current-score]]])]))
+         [:div#sb-progress-marker {:style {:margin-left (str (* 10.4 (- (count (filter #(>= current-score %) (keys rankings))) 1)) "%")}} current-score]]])]))
 
 
 (defn word-list []
@@ -68,16 +66,16 @@
     [:div#word-list-container
      [:div  "You have found " count " word" (when (> count 1) "s")]
      (for [item (sort list)]
-       ^{:key item} [:div {:class "w3-animate-fading" :style {:margin-left "2%"}} item])]))
+       ^{:key item} [:div#word-item item])]))
 
 
 (defn main-panel []
   [:div
-   [:div {:style {:float "left"}}
+   [:div#left-container
     [input]
     [char-buttons]
     [option-buttons]
     [popup]]
-   [:div {:style {:float "right" :width "50%"}}
+   [:div#right-container
     [slider]
     [word-list]]])

@@ -1,3 +1,24 @@
+#left-container {
+  float: left;
+}
+
+#right-container {
+  float: right;
+  width: 50%;
+}
+
+#main-button {
+  background-color: yellow;
+}
+
+#slider-container {
+  cursor: pointer;
+}
+
+#word-item {
+  margin-left: 2%;
+}
+
 #sb-hive-input {
   color: green;
   text-transform: uppercase;
@@ -127,6 +148,7 @@
 
 #sb-progress-marker {
   position: absolute;
+  float: left;
   width: 30px;
   height: 30px;
   line-height: 30px;

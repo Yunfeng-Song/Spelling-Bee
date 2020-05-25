@@ -2,21 +2,16 @@
   (:require
    [re-frame.core :as re-frame :refer [reg-sub subscribe]]))
 
-(re-frame/reg-sub
- ::name
- (fn [db]
-   (:name db)))
-
 (reg-sub
  :input-value
  (fn [db _]
    (println "db" db)
-   (:value db)))
+   (get-in db [:game-status :value])))
 
 (reg-sub
  :word-list
  (fn [db _]
-   (:word-list db)))
+   (get-in db [:game-status :word-list])))
 
 (reg-sub
  :main-char
@@ -49,14 +44,14 @@
 (reg-sub
  :current-score
  (fn [db _]
-   (get-in db [:current-score])))
+   (get-in db [:game-status :current-score])))
 
 (reg-sub
  :popup
  (fn [db _]
-   (get db :popup)))
+   (get-in db [:game-status :popup])))
 
 (reg-sub
  :message
  (fn [db _]
-   (get db :message)))
+   (get-in db [:game-status :message])))

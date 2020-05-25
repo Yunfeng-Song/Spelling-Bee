@@ -2,7 +2,7 @@
   (:require
    [reagent.core :as reagent]
    [reagent.dom :as rdom]
-   [re-frame.core :as re-frame :refer [dispatch dispatch-sync]]
+   [re-frame.core :as re-frame :refer [dispatch-sync]]
    [spelling-bee.events :as events]
    [spelling-bee.views :as views]
    [spelling-bee.config :as config]))
