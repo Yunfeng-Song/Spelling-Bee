@@ -8,30 +8,43 @@
 
 
 (defn popup []
-  (let [success @(subscribe [:popup]) message @(subscribe [:message])]
+  (let [success @(subscribe [:popup])
+        message @(subscribe [:message])]
     [:> FlipMove {:enterAnimation "fade" :leaveAnimation "fade" :duration "1000"}
      (when success
        (dispatch [:popup-finished])
        [:div message])]))
 
 
+(defn get-char-class
+  [char main-char rest-chars]
+  (cond
+    (= char main-char) "main-char"
+    (some #(= char %) rest-chars) ""
+    :else "invalid-char"))
+
 (defn input []
-  (let [value  @(subscribe [:input-value])]
-    [:div {:tab-Index -1 :on-key-down #(cond
-                                         (and (<= 65 (.-keyCode %)) (>= 90 (.-keyCode %))) (dispatch [:add-char (upper-case (.-key %))])
-                                         (= 32 (.-keyCode %)) (dispatch [:shuffle])
-                                         (= 8 (.-keyCode %)) (when (not= "" value)
-                                                               (dispatch [:delete-char]))
-                                         (= 13 (.-keyCode %)) (when (not= "" value)
-                                                                (dispatch [:handle-save])))}
-     (let [chars (split value "") chars-with-index (zipmap (range (count chars)) chars)]
-       (doall (for [[index char] chars-with-index]
-                ^{:key (+ index char)} [:span {:class @(subscribe [:validate-char char])} char])))
+  (let [value  @(subscribe [:input-value])
+        chars (split value "")
+        chars-with-index (zipmap (range (count chars)) chars)
+        main-char @(subscribe [:main-char])
+        rest-chars @(subscribe [:rest-chars])]
+    [:div {:tab-Index -1 :on-key-down #((let [key (.-key %)]
+                                          (cond
+                                            (re-matches #"[a-z]" key) (dispatch [:add-char (upper-case key)])
+                                            (= " " key)               (dispatch [:shuffle])
+                                            (= "Backspace" key)       (when (not= "" value)
+                                                                        (dispatch [:delete-char]))
+                                            (= "Enter" key)           (when (not= "" value)
+                                                                        (dispatch [:handle-save])))))}
+     (doall (for [[index char] chars-with-index]
+              ^{:key (+ index char)} [:span {:class (get-char-class char main-char rest-chars)} char]))
      [:span {:class "blinking-cursor"} "|"]]))
 
 
 (defn char-buttons []
-  (let [main-char @(subscribe [:main-char]) rest-chars @(subscribe [:rest-chars])]
+  (let [main-char @(subscribe [:main-char])
+        rest-chars @(subscribe [:rest-chars])]
     [:div
      [:button#main-button {:on-click #(dispatch [:add-char main-char])} main-char]
      [:> FlipMove {}
@@ -49,20 +62,40 @@
                             (dispatch [:handle-save]))} "Enter"]]))
 
 
+(defn get-rank-from-score
+  [score rankings]
+  (rankings (last (filter #(>= score %) (keys rankings)))))
+
+(defn rankings-formater
+  [rankings]
+  (->> rankings
+       (reduce (fn [acc item] (str acc " " (last item) "(" (first item) ")" "\n")) "")
+       (str "Rankings: \n\n")))
+
+(defn margin-value
+  [score rankings]
+  (-> (filter #(>= score %) (keys rankings))
+      (count)
+      (- 1)
+      (* 10.4)
+      (str "%")))
+
 (defn slider []
-  (let [rankings @(subscribe [:rankings])]
-    [:div#slider-container {:on-click #(js/alert (str "Rankings: \n\n" (reduce (fn [acc item] (str acc " " (last item) "(" (first item) ")" "\n")) "" rankings)))}
-     (let [current-score @(subscribe [:current-score]) rank (rankings (last (filter #(>= current-score %) (keys rankings))))]
-       [:<> [:h4 rank]
-        [:div#sb-progress-line
-         [:div {:class "demo"}
-          (for [stage rankings]
-            ^{:key (last stage)} [:span {:class (if (<= (first stage) current-score) "sb-progress-dot completed" "sb-progress-dot")}])]
-         [:div#sb-progress-marker {:style {:margin-left (str (* 10.4 (- (count (filter #(>= current-score %) (keys rankings))) 1)) "%")}} current-score]]])]))
+  (let [rankings @(subscribe [:rankings])
+        current-score @(subscribe [:current-score])
+        rank (get-rank-from-score current-score rankings)]
+    [:div#slider-container {:on-click #(js/alert (rankings-formater rankings))}
+     [:<> [:h4 rank]
+      [:div#sb-progress-line
+       [:div
+        (for [stage rankings]
+          ^{:key (last stage)} [:span {:class (if (<= (first stage) current-score) "sb-progress-dot completed" "sb-progress-dot")}])]
+       [:div#sb-progress-marker {:style {:margin-left (margin-value current-score rankings)}} current-score]]]]))
 
 
 (defn word-list []
-  (let [list @(subscribe [:word-list]) count (count list)]
+  (let [list @(subscribe [:word-list])
+        count (count list)]
     [:div#word-list-container
      [:div  "You have found " count " word" (when (> count 1) "s")]
      (for [item (sort list)]
@@ -75,7 +108,8 @@
     [input]
     [char-buttons]
     [option-buttons]
-    [popup]]
+    [popup]
+    [:button {:on-click #(dispatch [:test])} "test"]]
    [:div#right-container
     [slider]
     [word-list]]])

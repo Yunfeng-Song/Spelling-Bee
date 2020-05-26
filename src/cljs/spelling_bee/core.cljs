@@ -21,9 +21,4 @@
 (defn init []
   (dispatch-sync [:initialize-db])
   (dev-setup)
-  (mount-root)
-  #_(.addEventListener js/document "keydown" #(cond
-                                                (and (<= 65 (.-keyCode %)) (>= 90 (.-keyCode %))) (dispatch [:add-char (upper-case (.-key %))])
-                                                (= 32 (.-keyCode %)) (dispatch [:shuffle])
-                                                (= 8 (.-keyCode %)) (dispatch [:delete-char])
-                                                (= 13 (.-keyCode %)) (dispatch [:handle-save]))))
+  (mount-root))
