@@ -23,10 +23,17 @@
     (some #(= char %) rest-chars) ""
     :else "invalid-char"))
 
+(defn chars-with-index-map
+  [chars]
+  (-> chars
+      (count)
+      (range)
+      (zipmap chars)))
+
 (defn input []
   (let [value  @(subscribe [:input-value])
         chars (split value "")
-        chars-with-index (zipmap (range (count chars)) chars)
+        chars-with-index (chars-with-index-map chars)
         main-char @(subscribe [:main-char])
         rest-chars @(subscribe [:rest-chars])]
     [:div {:tab-Index -1 :on-key-down #((let [key (.-key %)]
