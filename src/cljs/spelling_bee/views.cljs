@@ -100,9 +100,8 @@
        [:div#sb-progress-marker {:style {:margin-left (margin-value current-score rankings)}} current-score]]]]))
 
 
-(defn word-list []
-  (let [list @(subscribe [:word-list])
-        count (count list)]
+(defn word-list [list]
+  (let [count (count list)]
     [:div#word-list-container
      [:div  "You have found " count " word" (when (> count 1) "s")]
      (for [item (sort list)]
@@ -119,4 +118,4 @@
     [:button {:on-click #(dispatch [:test])} "test"]]
    [:div#right-container
     [slider]
-    [word-list]]])
+    [word-list @(subscribe [:word-list])]]])
