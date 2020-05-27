@@ -1,8 +1,8 @@
 (ns spelling-bee.views
   (:require
    [reagent.core :as reagent]
-   [re-frame.core :as re-frame :refer [subscribe dispatch]]
    [spelling-bee.subs :as subs]
+   [re-frame.core :as re-frame :refer [subscribe dispatch]]
    [clojure.string :as str :refer [split upper-case]]
    ["react-flip-move" :as FlipMove]))
 
@@ -12,7 +12,6 @@
         message @(subscribe [:message])]
     [:> FlipMove {:enterAnimation "fade" :leaveAnimation "fade" :duration "1000"}
      (when success
-       (dispatch [:popup-finished])
        [:div message])]))
 
 
@@ -40,10 +39,8 @@
                                           (cond
                                             (re-matches #"[a-z]" key) (dispatch [:add-char (upper-case key)])
                                             (= " " key)               (dispatch [:shuffle])
-                                            (= "Backspace" key)       (when (not= "" value)
-                                                                        (dispatch [:delete-char]))
-                                            (= "Enter" key)           (when (not= "" value)
-                                                                        (dispatch [:handle-save])))))}
+                                            (= "Backspace" key)       (and (not= "" value) (dispatch [:delete-char]))
+                                            (= "Enter" key)           (and (not= "" value) (dispatch [:handle-save])))))}
      (doall (for [[index char] chars-with-index]
               ^{:key (+ index char)} [:span {:class (get-char-class char main-char rest-chars)} char]))
      [:span {:class "blinking-cursor"} "|"]]))
@@ -62,11 +59,9 @@
 (defn option-buttons []
   (let [value @(subscribe [:input-value])]
     [:div
-     [:button {:on-click #(when (not= "" value)
-                            (dispatch [:delete-char]))} "Delete"]
+     [:button {:on-click #(and (not= "" value) (dispatch [:delete-char]))} "Delete"]
      [:button {:on-click #(dispatch [:shuffle])} "*"]
-     [:button {:on-click #(when (not= "" value)
-                            (dispatch [:handle-save]))} "Enter"]]))
+     [:button {:on-click #(and (not= "" value) (dispatch [:handle-save]))} "Enter"]]))
 
 
 (defn get-rank-from-score
@@ -103,7 +98,7 @@
 (defn word-list [list]
   (let [count (count list)]
     [:div#word-list-container
-     [:div  "You have found " count " word" (when (> count 1) "s")]
+     [:div  "You have found " count " word" (and (> count 1) "s")]
      (for [item (sort list)]
        ^{:key item} [:div#word-item item])]))
 
@@ -114,8 +109,7 @@
     [input]
     [char-buttons]
     [option-buttons]
-    [popup]
-    [:button {:on-click #(dispatch [:test])} "test"]]
+    [popup]]
    [:div#right-container
     [slider]
     [word-list @(subscribe [:word-list])]]])

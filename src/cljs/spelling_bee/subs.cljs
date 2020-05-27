@@ -23,14 +23,6 @@
  (fn [db _]
    (get-in db [:game-data :chars :rest])))
 
-; (reg-sub
-;  :validate-char
-;  (fn [db [_ value]]
-;    (cond
-;      (= value (get-in db [:game-data :chars :main])) "main-char"
-;      (some #(= value %) (get-in db [:game-data :chars :rest])) ""
-;      :else "invalid-char")))
-
 (reg-sub
  :answer-list
  (fn [db _]

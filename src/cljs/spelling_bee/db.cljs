@@ -1,6 +1,6 @@
 (ns spelling-bee.db)
 
-(def default-db           ;; what gets put into app-db by default.
+(def default-db
   {:game-status {:value ""
                  :word-list []
                  :current-score 0
