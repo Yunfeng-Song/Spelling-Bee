@@ -2,7 +2,7 @@
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as re-frame :refer [subscribe dispatch]]
-   [clojure.string :as str :refer [split upper-case]]
+   [clojure.string :as str :refer [upper-case]]
    ["react-flip-move" :as FlipMove]))
 
 
@@ -13,34 +13,16 @@
      [:div message])])
 
 
-(defn get-char-class
-  [char main-char rest-chars]
-  (cond
-    (= char main-char) "main-char"
-    (some #(= char %) rest-chars) ""
-    :else "invalid-char"))
-
-(defn chars-with-index-map
-  [chars]
-  (-> chars
-      (count)
-      (range)
-      (zipmap chars)))
-
 (defn input []
-  (let [value  @(subscribe [:input-value])
-        chars (split value "")
-        chars-with-index (chars-with-index-map chars)
-        main-char @(subscribe [:main-char])
-        rest-chars @(subscribe [:rest-chars])]
+  (let [value  @(subscribe [:input-value])]
     [:div {:tab-Index -1 :on-key-down #(let [key (.-key %)]
                                          (cond
                                            (re-matches #"[a-z]" key) (dispatch [:add-char (upper-case key)])
                                            (= " " key)               (dispatch [:shuffle])
                                            (= "Backspace" key)       (and (not= "" value) (dispatch [:delete-char]))
                                            (= "Enter" key)           (and (not= "" value) (dispatch [:handle-save]))))}
-     (doall (for [[index char] chars-with-index]
-              ^{:key (+ index char)} [:span {:class (get-char-class char main-char rest-chars)} char]))
+     (doall (for [[index char] @(subscribe [:chars-with-index])]
+              ^{:key (+ index char)} [:span {:class @(subscribe [:char-class char])} char]))
      [:span {:class "blinking-cursor"} "|"]]))
 
 
@@ -62,35 +44,14 @@
      [:button {:on-click #(and (not= "" value) (dispatch [:handle-save]))} "Enter"]]))
 
 
-(defn get-rank-from-score
-  [score rankings]
-  (rankings (last (filter #(>= score %) (keys rankings)))))
-
-(defn rankings-formater
-  [rankings]
-  (->> rankings
-       (reduce (fn [acc item] (str acc " " (last item) "(" (first item) ")" "\n")) "")
-       (str "Rankings: \n\n")))
-
-(defn margin-value
-  [score rankings]
-  (-> (filter #(>= score %) (keys rankings))
-      (count)
-      (- 1)
-      (* 10.4)
-      (str "%")))
-
 (defn slider []
-  (let [rankings @(subscribe [:rankings])
-        current-score @(subscribe [:current-score])
-        rank (get-rank-from-score current-score rankings)]
-    [:div#slider-container {:on-click #(js/alert (rankings-formater rankings))}
-     [:<> [:h4 rank]
-      [:div#sb-progress-line
-       [:div
-        (for [stage rankings]
-          ^{:key (last stage)} [:span {:class (if (<= (first stage) current-score) "sb-progress-dot completed" "sb-progress-dot")}])]
-       [:div#sb-progress-marker {:style {:margin-left (margin-value current-score rankings)}} current-score]]]]))
+  [:div#slider-container {:on-click #(js/alert @(subscribe [:display-rankings]))}
+   [:<> [:h4 @(subscribe [:rank])]
+    [:div#sb-progress-line
+     [:div
+      (for [stage @(subscribe [:rankings])]
+        ^{:key (last stage)} [:span {:class @(subscribe [:dot-class stage])}])]
+     [:div#sb-progress-marker {:style {:margin-left @(subscribe [:margin-value])}} @(subscribe [:current-score])]]]])
 
 
 (defn word-list [list]
