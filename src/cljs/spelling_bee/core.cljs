@@ -3,12 +3,16 @@
    [reagent.core :as reagent]
    [reagent.dom :as rdom]
    [re-frame.core :as re-frame :refer [dispatch-sync]]
-   [spelling-bee.events :as events]
+   [spelling-bee.events]
+   [spelling-bee.subs]
    [spelling-bee.views :as views]
-   [spelling-bee.config :as config]))
+   [spelling-bee.config :as config]
+   [devtools.core :as devtools]))
 
 
 (defn dev-setup []
+  (devtools/install!)
+  (enable-console-print!)
   (when config/debug?
     (println "dev mode")))
 
@@ -22,3 +26,4 @@
   (dispatch-sync [:initialize-db])
   (dev-setup)
   (mount-root))
+

@@ -1,7 +1,6 @@
 (ns spelling-bee.views
   (:require
    [reagent.core :as reagent]
-   [spelling-bee.subs :as subs]
    [re-frame.core :as re-frame :refer [subscribe dispatch]]
    [clojure.string :as str :refer [split upper-case]]
    ["react-flip-move" :as FlipMove]))
@@ -35,12 +34,12 @@
         chars-with-index (chars-with-index-map chars)
         main-char @(subscribe [:main-char])
         rest-chars @(subscribe [:rest-chars])]
-    [:div {:tab-Index -1 :on-key-down #((let [key (.-key %)]
-                                          (cond
-                                            (re-matches #"[a-z]" key) (dispatch [:add-char (upper-case key)])
-                                            (= " " key)               (dispatch [:shuffle])
-                                            (= "Backspace" key)       (and (not= "" value) (dispatch [:delete-char]))
-                                            (= "Enter" key)           (and (not= "" value) (dispatch [:handle-save])))))}
+    [:div {:tab-Index -1 :on-key-down #(let [key (.-key %)]
+                                         (cond
+                                           (re-matches #"[a-z]" key) (dispatch [:add-char (upper-case key)])
+                                           (= " " key)               (dispatch [:shuffle])
+                                           (= "Backspace" key)       (and (not= "" value) (dispatch [:delete-char]))
+                                           (= "Enter" key)           (and (not= "" value) (dispatch [:handle-save]))))}
      (doall (for [[index char] chars-with-index]
               ^{:key (+ index char)} [:span {:class (get-char-class char main-char rest-chars)} char]))
      [:span {:class "blinking-cursor"} "|"]]))

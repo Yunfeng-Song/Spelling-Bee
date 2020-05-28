@@ -1,6 +1,6 @@
 (ns spelling-bee.events
   (:require
-   [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx]]
+   [re-frame.core :as re-frame :refer [reg-event-db reg-event-fx ->interceptor]]
    [spelling-bee.db :as db]
    [clojure.string :refer [upper-case split join]]))
 
@@ -44,15 +44,19 @@
     0
     (+ (- (count value) 3) (if pangram? 7 0))))
 
-(defn update-popup-input
-  [db message]
-  (-> db
-      (assoc-in [:game-status :popup] true)
-      (assoc-in [:game-status :message]  message)
-      (assoc-in [:game-status :value] "")))
+(def reset-value
+  (->interceptor
+   :id :reset-value
+   :after (fn [context]
+            (let [reset-fn (fn [db] (-> db
+                                        (assoc-in [:game-status :popup] true)
+                                        (assoc-in [:game-status :value] "")))]
+              (println "context: " context)
+              (update-in context [:effects :db] reset-fn)))))
 
 (reg-event-fx
  :handle-save
+ [reset-value]
  (fn [{:keys [db]} _]
    {:dispatch-later [{:ms 2000 :dispatch [:popup-finished]}]
     :db (let [value (get-in db [:game-status :value])
@@ -61,17 +65,17 @@
               answers (get-in db [:game-data :answers])
               word-list (get-in db [:game-status :word-list])]
           (cond
-            (too-short? value)                               (update-popup-input db "Too short")
-            (bad-letters? value (conj rest-chars main-char)) (update-popup-input db "Bad letters")
-            (missing-center-letter? value main-char)         (update-popup-input db "Missing center letter")
-            (not-in-word-list? value answers)                (update-popup-input db "Not in word list")
-            (already-found? value word-list)                 (update-popup-input db "Already found")
+            (too-short? value)                               (assoc-in  db [:game-status :message] "Too short")
+            (bad-letters? value (conj rest-chars main-char)) (assoc-in  db [:game-status :message] "Bad letters")
+            (missing-center-letter? value main-char)         (assoc-in  db [:game-status :message] "Missing center letter")
+            (not-in-word-list? value answers)                (assoc-in  db [:game-status :message] "Not in word list")
+            (already-found? value word-list)                 (assoc-in  db [:game-status :message] "Already found")
             :else                                            (let [p? (pangram? value rest-chars)
                                                                    point (calculate-point value p?)
                                                                    message (if p? "Pangram" "Good")]
 
                                                                (-> db
-                                                                   (update-popup-input (str message "! +" point))
+                                                                   (assoc-in  [:game-status :message] (str message "! +" point))
                                                                    (update-in [:game-status :word-list] conj value)
                                                                    (update-in [:game-status :current-score] + point)))))}))
 

@@ -5,7 +5,7 @@
 (reg-sub
  :input-value
  (fn [db _]
-   (println "db" db)
+   (.log js/console "db" db)
    (get-in db [:game-status :value])))
 
 (reg-sub
