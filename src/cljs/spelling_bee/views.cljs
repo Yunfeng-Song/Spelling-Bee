@@ -6,12 +6,11 @@
    ["react-flip-move" :as FlipMove]))
 
 
-(defn popup []
-  (let [success @(subscribe [:popup])
-        message @(subscribe [:message])]
-    [:> FlipMove {:enterAnimation "fade" :leaveAnimation "fade" :duration "1000"}
-     (when success
-       [:div message])]))
+(defn popup
+  [success? message]
+  [:> FlipMove {:enterAnimation "fade" :leaveAnimation "fade" :duration "1000"}
+   (when success?
+     [:div message])])
 
 
 (defn get-char-class
@@ -108,7 +107,7 @@
     [input]
     [char-buttons]
     [option-buttons]
-    [popup]]
+    [popup @(subscribe [:popup]) @(subscribe [:message])]]
    [:div#right-container
     [slider]
     [word-list @(subscribe [:word-list])]]])

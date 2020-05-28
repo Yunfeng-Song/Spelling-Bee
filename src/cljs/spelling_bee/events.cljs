@@ -51,7 +51,6 @@
             (let [reset-fn (fn [db] (-> db
                                         (assoc-in [:game-status :popup] true)
                                         (assoc-in [:game-status :value] "")))]
-              (println "context: " context)
               (update-in context [:effects :db] reset-fn)))))
 
 (reg-event-fx
